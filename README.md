@@ -19,9 +19,9 @@ p, err := puppet.New()
 panicIfErr(err)
 
 res, err = p.InBatches(10, 30).FactFilter("customer=acme"). \\ these are client level settings that persist between
-                                                             \\ invocations of any agent
-  Disable().                                                 \\ if there are mandatory inputs to the action `disable`
-                                                              \\ you'd pass them as arguments here, optional ones are chained
+                                                            \\ invocations of any agent
+  Disable().                                                \\ if there are mandatory inputs to the action `disable`
+                                                            \\ you'd pass them as arguments here, optional ones are chained
   Message("testing, 1, 2, 3).
   Do(ctx)
   
