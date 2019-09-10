@@ -60,7 +60,17 @@ type Metadata struct {
 	Description string `json:"description"`
 }
 
-// New creates a new client to the puppet agent
+// MustNew create a new client and panics on error
+func MustNew(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) {
+	c, err := New(opts...)
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
+// New creates a new client to the {{ .DDL.Metadata.Name }} agent
 func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client, err error) {
 	c := &{{ .DDL.Metadata.Name | SnakeToCamel }}Client{
 		ddl:           &agent.DDL{},
