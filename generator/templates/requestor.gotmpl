@@ -12,7 +12,7 @@ import (
 
 // Requestor is a generic request handler
 type Requestor struct {
-	client *PuppetClient
+	client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client
 	action string
 	args   map[string]interface{}
 }
