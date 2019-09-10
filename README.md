@@ -37,7 +37,7 @@ mco rpc puppet disable message="testing, 1, 2, 3"
 Processing the results is like this:
 
 ```golang
-res.EachResult(func(r *puppet.DisableResult) {
+res.EachOutput(func(r *puppet.DisableResult) {
   // the disable action has 2 outputs "status" and "enabled"
   // data types are either correct if the DDL defined it else interface{},
   // here its string and boolean
@@ -58,8 +58,10 @@ res.EachResult(func(r *puppet.DisableResult) {
 or for faster processing this:
 
 ```golang
-c := make(chan *puppet.DisableResult, 1000)
+// channel to receive outputs
+c := make(chan *puppet.DisableOutput, 1000)
 
+// res is still a result but its output are empty
 res, err = p.InBatches(10, 30).FactFilter("customer=acme").Disable().Results(c).Do(ctx)
 ```
 

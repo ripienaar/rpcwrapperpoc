@@ -4,10 +4,45 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/ripienaar/puppet/puppetclient"
 	"github.com/sirupsen/logrus"
 )
+
+func disable(ctx context.Context, puppet *puppetclient.PuppetClient) {
+	res, err := puppet.Disable().Message("testing 1,2,3").Do(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Responses: \n")
+	res.EachOutput(func(o *puppetclient.DisableOutput) {
+		if o.ResultDetails().OK() {
+			fmt.Printf("%s: enabled: %v: %s\n", o.ResultDetails().Sender(), o.Enabled(), o.Status())
+		} else {
+			fmt.Printf("%s: %s\n", o.ResultDetails().Sender(), o.ResultDetails().StatusMessage())
+		}
+	})
+
+	fmt.Printf("success: %d fail: %d\n", res.Stats().OKCount(), res.Stats().FailCount())
+}
+
+func enable(ctx context.Context, puppet *puppetclient.PuppetClient) {
+	res, err := puppet.Enable().Do(ctx)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Responses: \n")
+	res.EachOutput(func(o *puppetclient.EnableOutput) {
+		if o.ResultDetails().OK() {
+			fmt.Printf("%s: enabled: %v: %s\n", o.ResultDetails().Sender(), o.Enabled(), o.Status())
+		} else {
+			fmt.Printf("%s: %s\n", o.ResultDetails().Sender(), o.ResultDetails().StatusMessage())
+		}
+	})
+
+	fmt.Printf("success: %d fail: %d\n", res.Stats().OKCount(), res.Stats().FailCount())
+
+}
 
 func main() {
 	logger := logrus.NewEntry(logrus.New())
@@ -16,26 +51,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	f := protocol.NewFilter()
-	err := f.AddFactFilter("country", "==", "mt")
-	if err != nil {
-		panic(err)
-	}
-
 	puppet, err := puppetclient.New(puppetclient.Logger(logger))
 	if err != nil {
 		panic(err)
 	}
 
-	res, err := puppet.Filter(f).Disable().Message("testing 1,2,3").Do(ctx)
-	if err != nil {
-		panic(err)
-	}
+	puppet.FactFilter("country=mt")
 
-	fmt.Printf("Responses: \n")
-	res.EachOutput(func(o *puppetclient.DisableOutput) {
-		fmt.Printf("%s: enabled: %v: %s\n", o.ResultDetails().Sender(), o.Enabled(), o.Status())
-	})
-
-	fmt.Printf("success: %d fail: %d\n", res.Stats().OKCount(), res.Stats().FailCount())
+	disable(ctx, puppet)
+	enable(ctx, puppet)
 }

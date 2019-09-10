@@ -18,7 +18,7 @@ type Requestor struct {
 // Do performs the request
 func (r *Requestor) Do(ctx context.Context, handler func(pr protocol.Reply, r *rpcclient.RPCReply)) (*rpcclient.Stats, error) {
 	r.client.Infof("Starting discovery")
-	targets, err := r.client.ns.Discover(ctx, r.client.fw)
+	targets, err := r.client.ns.Discover(ctx, r.client.fw, r.client.filters)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (r *Requestor) Do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	}
 	opts = append(opts, rpcclient.ReplyHandler(handler))
 
-	r.client.Infof("Invoking %s action with %#v", r.action, r.args)
+	r.client.Infof("Invoking %s#%s action with %#v", r.client.ddl.Metadata.Name, r.action, r.args)
 
 	res, err := agent.Do(ctx, r.action, r.args, opts...)
 	if err != nil {

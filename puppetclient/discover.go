@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/choria"
+	coreclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-client/discovery/broadcast"
 	"github.com/choria-io/go-protocol/protocol"
 )
@@ -16,15 +18,14 @@ type BroadcastNS struct {
 	sync.Mutex
 }
 
-func (b *BroadcastNS) SetFilter(f *protocol.Filter) {
+func (b *BroadcastNS) Reset() {
 	b.Lock()
 	defer b.Unlock()
 
-	b.f = f
 	b.nodeCache = []string{}
 }
 
-func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework) ([]string, error) {
+func (b *BroadcastNS) Discover(ctx context.Context, fw *choria.Framework, filters []coreclient.Filter) ([]string, error) {
 	b.Lock()
 	defer b.Unlock()
 
@@ -37,16 +38,17 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework) ([]strin
 		return out
 	}
 
-	if b.nodeCache != nil && len(b.nodeCache) > 0 {
+	if !(b.nodeCache == nil || len(b.nodeCache) == 0) {
 		return copier(), nil
+	}
+
+	err := b.parseFilters(filters)
+	if err != nil {
+		return nil, err
 	}
 
 	if b.nodeCache == nil {
 		b.nodeCache = []string{}
-	}
-
-	if b.f == nil {
-		b.f = protocol.NewFilter()
 	}
 
 	cfg := fw.Configuration()
@@ -58,4 +60,17 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework) ([]strin
 	b.nodeCache = nodes
 
 	return copier(), nil
+}
+
+func (b *BroadcastNS) parseFilters(fs []coreclient.Filter) error {
+	b.f = protocol.NewFilter()
+
+	for _, f := range fs {
+		err := f(b.f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

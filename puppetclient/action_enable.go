@@ -7,46 +7,46 @@ import (
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 )
 
-// DisableRequestor performs a RPC request
-type DisableRequestor struct {
+// EnableRequestor performs a RPC request
+type EnableRequestor struct {
 	r    *Requestor
-	outc chan *DisableOutput
+	outc chan *EnableOutput
 }
 
-// DisableOutput is the output from the disable action
-type DisableOutput struct {
+// EnableOutput is the output from the disable action
+type EnableOutput struct {
 	details *ResultDetails
 	reply   map[string]interface{}
 }
 
-// DisableResult is the result from a disable request
-type DisableResult struct {
+// EnableResult is the result from a disable request
+type EnableResult struct {
 	stats   *rpcclient.Stats
-	outputs []*DisableOutput
+	outputs []*EnableOutput
 }
 
 // Stats is the rpc request stats
-func (d *DisableResult) Stats() *rpcclient.Stats {
+func (d *EnableResult) Stats() *rpcclient.Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *DisableOutput) ResultDetails() *ResultDetails {
+func (d *EnableOutput) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *DisableOutput) HashMap() map[string]interface{} {
+func (d *EnableOutput) HashMap() map[string]interface{} {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *DisableOutput) JSON() ([]byte, error) {
+func (d *EnableOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
 // Status returns the status value
-func (d *DisableOutput) Status() string {
+func (d *EnableOutput) Status() string {
 	v, ok := d.reply["status"]
 	if !ok {
 		return ""
@@ -56,7 +56,7 @@ func (d *DisableOutput) Status() string {
 }
 
 // Enabled indicates the agent status
-func (d *DisableOutput) Enabled() bool {
+func (d *EnableOutput) Enabled() bool {
 	v, ok := d.reply["enabled"]
 	if !ok {
 		return false
@@ -65,19 +65,12 @@ func (d *DisableOutput) Enabled() bool {
 	return v.(bool)
 }
 
-// Message supply a reason for disabling the Puppet agent
-func (d *DisableRequestor) Message(m string) *DisableRequestor {
-	d.r.args["message"] = m
-
-	return d
-}
-
 // Do performs the request
-func (d *DisableRequestor) Do(ctx context.Context) (*DisableResult, error) {
-	dres := &DisableResult{}
+func (d *EnableRequestor) Do(ctx context.Context) (*EnableResult, error) {
+	eres := &EnableResult{}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
-		output := &DisableOutput{
+		output := &EnableOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -97,7 +90,7 @@ func (d *DisableRequestor) Do(ctx context.Context) (*DisableResult, error) {
 			return
 		}
 
-		dres.outputs = append(dres.outputs, output)
+		eres.outputs = append(eres.outputs, output)
 	}
 
 	res, err := d.r.Do(ctx, handler)
@@ -105,13 +98,13 @@ func (d *DisableRequestor) Do(ctx context.Context) (*DisableResult, error) {
 		return nil, err
 	}
 
-	dres.stats = res
+	eres.stats = res
 
-	return dres, nil
+	return eres, nil
 }
 
 // EachOutput iterates over all results received
-func (d *DisableResult) EachOutput(h func(r *DisableOutput)) {
+func (d *EnableResult) EachOutput(h func(r *EnableOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}

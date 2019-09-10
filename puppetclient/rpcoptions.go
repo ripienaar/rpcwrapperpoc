@@ -3,7 +3,7 @@ package puppetclient
 import (
 	"time"
 
-	"github.com/choria-io/go-protocol/protocol"
+	coreclient "github.com/choria-io/go-client/client"
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 )
 
@@ -11,13 +11,19 @@ import (
 func (p *PuppetClient) Reset() *PuppetClient {
 	p.clientRPCOpts = []rpcclient.RequestOption{}
 	p.ns = &BroadcastNS{}
+	p.filters = []coreclient.Filter{}
 
 	return p
 }
 
-// Filter sets the filter to use
-func (p *PuppetClient) Filter(f *protocol.Filter) *PuppetClient {
-	p.ns.SetFilter(f)
+// FactFilter adds a fact filter
+func (p *PuppetClient) FactFilter(f ...string) *PuppetClient {
+	for _, i := range f {
+		p.filters = append(p.filters, coreclient.FactFilter(i))
+	}
+
+	p.ns.Reset()
+
 	return p
 }
 

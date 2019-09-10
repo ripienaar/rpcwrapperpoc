@@ -8,41 +8,27 @@ import (
 	"context"
 
 	"github.com/choria-io/go-choria/choria"
+	coreclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/go-srvcache"
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	"github.com/sirupsen/logrus"
 )
-
-// ChoriaFramework is the choria framework to use
-type ChoriaFramework interface {
-	Configuration() *config.Config
-	Logger(string) *logrus.Entry
-	NewRequestID() (string, error)
-	Certname() string
-	MiddlewareServers() (srvcache.Servers, error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
-	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
-	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
-	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
-}
 
 // NodeSource discovers nodes
 type NodeSource interface {
-	Discover(ctx context.Context, fw ChoriaFramework) ([]string, error)
-	SetFilter(*protocol.Filter)
+	Reset()
+	Discover(ctx context.Context, fw *choria.Framework, filters []coreclient.Filter) ([]string, error)
 }
 
 // PuppetClient to the puppet agent
 type PuppetClient struct {
-	fw            ChoriaFramework
+	fw            *choria.Framework
 	cfg           *config.Config
 	ddl           *agent.DDL
 	ns            NodeSource
 	clientOpts    *initOptions
 	clientRPCOpts []rpcclient.RequestOption
+	filters       []coreclient.Filter
 }
 
 // Metadata is the agent metadata
@@ -62,6 +48,7 @@ func New(opts ...InitializationOption) (client *PuppetClient, err error) {
 		ddl:           &agent.DDL{},
 		ns:            &BroadcastNS{},
 		clientRPCOpts: []rpcclient.RequestOption{},
+		filters:       []coreclient.Filter{},
 		clientOpts: &initOptions{
 			cfgFile: choria.UserConfig(),
 		},
@@ -117,9 +104,24 @@ func (p *PuppetClient) SetNodeSource(ns NodeSource) *PuppetClient {
 // Disable disable the Puppet agent
 func (p *PuppetClient) Disable() *DisableRequestor {
 	d := &DisableRequestor{
+		outc: nil,
 		r: &Requestor{
 			args:   make(map[string]interface{}),
 			action: "disable",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// Enable enables the Puppet agent
+func (p *PuppetClient) Enable() *EnableRequestor {
+	d := &EnableRequestor{
+		outc: nil,
+		r: &Requestor{
+			args:   make(map[string]interface{}),
+			action: "enable",
 			client: p,
 		},
 	}
