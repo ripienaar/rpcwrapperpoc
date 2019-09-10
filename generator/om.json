@@ -1,0 +1,299 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "name": "om",
+    "description": "Overlay Manager POC",
+    "author": "R.I.Pienaar <rip@devco.net>",
+    "license": "Commercial",
+    "version": "0.0.1",
+    "url": "https://choria.io",
+    "timeout": 300
+  },
+  "actions": [
+    {
+      "action": "check",
+      "input": {
+        "component": {
+          "prompt": "Component to check",
+          "description": "The name of the component to check",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "\\Apeo-(.+)\\z",
+          "maxlength": 128
+        }
+      },
+      "output": {
+        "component": {
+          "description": "The component name",
+          "display_as": "Component",
+          "default": null
+        },
+        "version": {
+          "description": "The version of the component installed",
+          "display_as": "Version",
+          "default": null
+        },
+        "check_status": {
+          "description": "The boolean status of the component",
+          "display_as": "Status",
+          "default": null
+        },
+        "check_output": {
+          "description": "Output produced by the check script",
+          "display_as": "Output",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Checks a specific component",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "version"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "check_status"
+          ]
+        }
+      ]
+    },
+    {
+      "action": "check_all",
+      "input": {
+      },
+      "output": {
+        "status": {
+          "description": "Overall status of all components",
+          "display_as": "Overall Status",
+          "default": false
+        },
+        "components": {
+          "description": "Number of components checked",
+          "display_as": "Components",
+          "default": 0
+        },
+        "statusses": {
+          "description": "Detail of each component and its status",
+          "display_as": "Statusses",
+          "default": null
+        },
+        "disabled": {
+          "description": "If the node has been locked",
+          "display_as": "Locked",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Checks all components",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "status"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "components"
+          ]
+        }
+      ]
+    },
+    {
+      "action": "configure",
+      "input": {
+        "component": {
+          "prompt": "Component to configure",
+          "description": "The name of the component to configure",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "\\Apeo-(.+)\\z",
+          "maxlength": 128
+        },
+        "config": {
+          "prompt": "JSON configuration data",
+          "description": "JSON data to pass to the configure script",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "\\A{.*}\\z",
+          "maxlength": 5120
+        }
+      },
+      "output": {
+        "config_status": {
+          "description": "The boolean status of the configuration command",
+          "display_as": "Status",
+          "default": null
+        },
+        "config_output": {
+          "description": "Output produced by the configure script",
+          "display_as": "Output",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Configures a specific package",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "config_status"
+          ]
+        }
+      ]
+    },
+    {
+      "action": "install",
+      "input": {
+        "component": {
+          "prompt": "Component to install or upgrade",
+          "description": "The name of the component to manage",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "\\Apeo-(.+)\\z",
+          "maxlength": 128
+        },
+        "version": {
+          "prompt": "Version to install",
+          "description": "The version of the component to manage",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "\\A\\d+\\.\\d+\\.\\d+\\z",
+          "maxlength": 17
+        },
+        "config": {
+          "prompt": "JSON configuration data",
+          "description": "JSON data to pass to the configure script",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "\\A{.*}\\z",
+          "maxlength": 5120
+        },
+        "yum_base": {
+          "prompt": "YUM base URL",
+          "description": "Base path to the YUM repositories",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": ".+",
+          "maxlength": 256
+        }
+      },
+      "output": {
+        "version": {
+          "description": "The version of the component installed",
+          "display_as": "Version",
+          "default": null
+        },
+        "install_status": {
+          "description": "The status of the install operation",
+          "display_as": "Install Status",
+          "default": null
+        },
+        "config_status": {
+          "description": "The boolean status of the configuration command",
+          "display_as": "Config Status",
+          "default": null
+        },
+        "config_output": {
+          "description": "Output produced by the configure script",
+          "display_as": "Config Output",
+          "default": null
+        },
+        "check_status": {
+          "description": "The boolean status of the component",
+          "display_as": "Check Status",
+          "default": null
+        },
+        "check_output": {
+          "description": "Output produced by the check script",
+          "display_as": "Check Output",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Upgrade/Install, configure and checks a package",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "version"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "config_status"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "check_status"
+          ]
+        }
+      ]
+    },
+    {
+      "action": "lock",
+      "input": {
+      },
+      "output": {
+        "path": {
+          "description": "Path to the lock file",
+          "display_as": "Path",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Locks the node preventing installation or configuration"
+    },
+    {
+      "action": "unlock",
+      "input": {
+      },
+      "output": {
+        "path": {
+          "description": "Path to the lock file",
+          "display_as": "Path",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Unlocks the node allowing installation and configuration to happen"
+    },
+    {
+      "action": "versions",
+      "input": {
+      },
+      "output": {
+        "versions": {
+          "description": "Current versions",
+          "display_as": "Versions",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Retrieve current versions",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "versions"
+          ]
+        }
+      ]
+    }
+  ]
+}
