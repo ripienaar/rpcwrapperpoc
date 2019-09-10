@@ -113,3 +113,16 @@ func (p *PuppetClient) SetNodeSource(ns NodeSource) *PuppetClient {
 	p.ns = ns
 	return p
 }
+
+// Disable disable the Puppet agent
+func (p *PuppetClient) Disable() *DisableRequestor {
+	d := &DisableRequestor{
+		r: &Requestor{
+			args:   make(map[string]interface{}),
+			action: "disable",
+			client: p,
+		},
+	}
+
+	return d
+}

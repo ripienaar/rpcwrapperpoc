@@ -7,8 +7,8 @@ import (
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 )
 
-// ResetRequestOptions resets the client options to use across requests to an empty list
-func (p *PuppetClient) ResetRequestOptions() *PuppetClient {
+// Reset resets the client options to use across requests to an empty list
+func (p *PuppetClient) Reset() *PuppetClient {
 	p.clientRPCOpts = []rpcclient.RequestOption{}
 	p.ns = &BroadcastNS{}
 

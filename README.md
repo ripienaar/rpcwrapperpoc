@@ -21,10 +21,10 @@ panicIfErr(err)
 res, err = p.InBatches(10, 30).FactFilter("customer=acme"). \\ these are client level settings that persist between
                                                             \\ invocations of any agent
   Disable().                                                \\ if there are mandatory inputs to the action `disable`
-                                                            \\ you'd pass them as arguments here, optional ones are chained
+                                                            \\ you would pass them as arguments here, optional ones are chained
   Message("testing, 1, 2, 3).
   Do(ctx)
-  
+
 panicIfErr(err)
 ```
 
@@ -42,14 +42,14 @@ res.EachResult(func(r *puppet.DisableResult) {
   // data types are either correct if the DDL defined it else interface{},
   // here its string and boolean
   fmt.Printf("%s: status: %s enabled: %v\n", r.ResultDetails().Sender(), r.Status(), r.Enabled())
-  
+
   // status code and message is accessible
   r.ResultDetails().StatusMessage()
   r.ResultDetails().StatusCode()
-  
+
   // you can also get a map[string]interface{}
   r.HashMap()
-  
+
   // or just all in json which would be more detailed including sender etc
   r.JSON()
 })
@@ -57,7 +57,7 @@ res.EachResult(func(r *puppet.DisableResult) {
 
 or for faster processing this:
 
-```
+```golang
 c := make(chan *puppet.DisableResult, 1000)
 
 res, err = p.InBatches(10, 30).FactFilter("customer=acme").Disable().Results(c).Do(ctx)

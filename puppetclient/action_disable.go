@@ -2,32 +2,36 @@ package puppetclient
 
 import (
 	"context"
-	"fmt"
-
+	"encoding/json"
+	"github.com/choria-io/go-protocol/protocol"
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 )
-
-// Requestor is a generic request handler
-type Requestor struct {
-	client *PuppetClient
-	action string
-	args   map[string]interface{}
-}
 
 // DisableRequestor performs a RPC request
 type DisableRequestor struct {
 	r *Requestor
 }
 
+// DisableOutput is the output from the disable action
+type DisableOutput struct {
+	details *ResultDetails
+	reply   map[string]interface{}
+}
+
 // DisableResult is the result from a disable request
 type DisableResult struct {
-	Stats   *rpcclient.Stats
+	stats   *rpcclient.Stats
 	outputs []*DisableOutput
 }
 
-// DisableOutput is the output from the disable action
-type DisableOutput struct {
-	reply map[string]interface{}
+// Stats is the rpc request stats
+func (d *DisableResult) Stats() *rpcclient.Stats {
+	return d.stats
+}
+
+// ResultDetails is the details about the request
+func (d *DisableOutput) ResultDetails() *ResultDetails {
+	return d.details
 }
 
 // Status returns the status value
@@ -50,19 +54,6 @@ func (d *DisableOutput) Enabled() bool {
 	return v.(bool)
 }
 
-// Disable disable the Puppet agent
-func (p *PuppetClient) Disable() *DisableRequestor {
-	d := &DisableRequestor{
-		r: &Requestor{
-			args:   make(map[string]interface{}),
-			action: "disable",
-			client: p,
-		},
-	}
-
-	return d
-}
-
 // Message supply a reason for disabling the Puppet agent
 func (d *DisableRequestor) Message(m string) *DisableRequestor {
 	d.r.args["message"] = m
@@ -70,44 +61,42 @@ func (d *DisableRequestor) Message(m string) *DisableRequestor {
 	return d
 }
 
-func (r *Requestor) Do(ctx context.Context) (*rpcclient.Stats, error) {
-	r.client.Infof("Starting discovery")
-	targets, err := r.client.ns.Discover(ctx, r.client.fw)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(targets) == 0 {
-		return nil, fmt.Errorf("no nodes were discovered")
-	}
-	r.client.Infof("Discovered %d nodes", len(targets))
-
-	agent, err := rpcclient.New(r.client.fw, r.client.ddl.Metadata.Name, rpcclient.DDL(r.client.ddl))
-	if err != nil {
-		return nil, fmt.Errorf("could not create client: %s", err)
-	}
-
-	opts := []rpcclient.RequestOption{rpcclient.Targets(targets)}
-	for _, opt := range r.client.clientRPCOpts {
-		opts = append(opts, opt)
-	}
-
-	r.client.Infof("Invoking %s action with %#v", r.action, r.args)
-
-	res, err := agent.Do(ctx, r.action, r.args, opts...)
-	if err != nil {
-		return nil, fmt.Errorf("could not perform disable request: %s", err)
-	}
-
-	return res.Stats(), nil
-}
-
 // Do performs the request
 func (d *DisableRequestor) Do(ctx context.Context) (*DisableResult, error) {
-	res, err := d.r.Do(ctx)
+	dres := &DisableResult{}
+
+	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		output := &DisableOutput{
+			reply: make(map[string]interface{}),
+			details: &ResultDetails{
+				sender:  pr.SenderID(),
+				code:    int(r.Statuscode),
+				message: r.Statusmsg,
+				ts:      pr.Time(),
+			},
+		}
+
+		err := json.Unmarshal(r.Data, &output.reply)
+		if err != nil {
+			d.r.client.Errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
+		}
+
+		dres.outputs = append(dres.outputs, output)
+	}
+
+	res, err := d.r.Do(ctx, handler)
 	if err != nil {
 		return nil, err
 	}
 
-	return &DisableResult{Stats: res}, nil
+	dres.stats = res
+
+	return dres, nil
+}
+
+// EachOutput iterates over all results received
+func (d *DisableResult) EachOutput(h func(r *DisableOutput)) {
+	for _, resp := range d.outputs {
+		h(resp)
+	}
 }
