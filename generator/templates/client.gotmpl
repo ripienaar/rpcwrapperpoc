@@ -10,7 +10,6 @@ import (
 	"context"
 
 	"github.com/choria-io/go-choria/choria"
-	coreclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-srvcache"
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
@@ -22,7 +21,7 @@ import (
 // NodeSource discovers nodes
 type NodeSource interface {
 	Reset()
-	Discover(ctx context.Context, fw ChoriaFramework, filters []coreclient.Filter) ([]string, error)
+	Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error)
 }
 
 // ChoriaFramework is the choria framework
@@ -38,6 +37,9 @@ type ChoriaFramework interface {
 	Certname() string
 }
 
+// FilterFunc can generate a choria filter
+type FilterFunc func(f *protocol.Filter) error
+
 // {{ .DDL.Metadata.Name | SnakeToCamel }}Client to the {{ .DDL.Metadata.Name }} agent
 type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	fw           ChoriaFramework
@@ -46,7 +48,7 @@ type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	ns            NodeSource
 	clientOpts    *initOptions
 	clientRPCOpts []rpcclient.RequestOption
-	filters       []coreclient.Filter
+	filters       []FilterFunc
 }
 
 // Metadata is the agent metadata
@@ -60,8 +62,8 @@ type Metadata struct {
 	Description string `json:"description"`
 }
 
-// MustNew create a new client and panics on error
-func MustNew(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) {
+// Must create a new client and panics on error
+func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) {
 	c, err := New(opts...)
 	if err != nil {
 		panic(err)
@@ -75,7 +77,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 	c := &{{ .DDL.Metadata.Name | SnakeToCamel }}Client{
 		ddl:           &agent.DDL{},
 		clientRPCOpts: []rpcclient.RequestOption{},
-		filters:       []coreclient.Filter{},
+		filters:       []FilterFunc{},
 		clientOpts: &initOptions{
 			cfgFile: choria.UserConfig(),
 		},

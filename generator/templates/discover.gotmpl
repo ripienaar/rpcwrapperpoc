@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	coreclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-client/discovery/broadcast"
 	"github.com/choria-io/go-protocol/protocol"
 )
@@ -26,7 +25,7 @@ func (b *BroadcastNS) Reset() {
 	b.nodeCache = []string{}
 }
 
-func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters []coreclient.Filter) ([]string, error) {
+func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
 	b.Lock()
 	defer b.Unlock()
 
@@ -63,7 +62,7 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters 
 	return copier(), nil
 }
 
-func (b *BroadcastNS) parseFilters(fs []coreclient.Filter) error {
+func (b *BroadcastNS) parseFilters(fs []FilterFunc) error {
 	b.f = protocol.NewFilter()
 
 	for _, f := range fs {

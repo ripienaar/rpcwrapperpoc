@@ -13,7 +13,7 @@ import (
 func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReset() *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
 	p.clientRPCOpts = []rpcclient.RequestOption{}
 	p.ns = p.clientOpts.ns
-	p.filters = []coreclient.Filter{}
+	p.filters = []FilterFunc{}
 
 	return p
 }
@@ -21,7 +21,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReset() *{{ .DDL.M
 // OptionFactFilter adds a fact filter
 func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionFactFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
 	for _, i := range f {
-		p.filters = append(p.filters, coreclient.FactFilter(i))
+		p.filters = append(p.filters, FilterFunc(coreclient.FactFilter(i)))
 	}
 
 	p.ns.Reset()

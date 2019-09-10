@@ -3,17 +3,17 @@ package main
 //go:generate go run generate_templates.go
 
 import (
-	// "fmt"
 	"encoding/base64"
 	"fmt"
-	"github.com/choria-io/go-choria/choria"
-	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"text/template"
+
+	"github.com/choria-io/go-choria/choria"
+	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 type Agent struct {
