@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"context"
 
@@ -17,6 +18,23 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/choria-io/go-protocol/protocol"
 )
+
+// Stats are the statistics for a request
+type Stats interface {
+	Agent() string
+	Action() string
+	All() bool
+	NoResponseFrom() []string
+	UnexpectedResponseFrom() []string
+	DiscoveredCount() int
+	DiscoveredNodes() *[]string
+	FailCount() int
+	OKCount() int
+	ResponsesCount() int
+	PublishDuration() (time.Duration, error)
+	RequestDuration() (time.Duration, error)
+	DiscoveryDuration() (time.Duration, error)
+}
 
 // NodeSource discovers nodes
 type NodeSource interface {
@@ -136,7 +154,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}() *{{ $action.Name | SnakeToCamel }}Requestor {
 	d := &{{ $action.Name | SnakeToCamel }}Requestor{
 		outc: nil,
-		r: &Requestor{
+		r: &requestor{
 			args:   make(map[string]interface{}),
 			action: "{{ $action.Name | ToLower }}",
 			client: p,

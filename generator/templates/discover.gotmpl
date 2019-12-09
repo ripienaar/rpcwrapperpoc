@@ -11,6 +11,7 @@ import (
 	"github.com/choria-io/go-protocol/protocol"
 )
 
+// BroadcastNS is a NodeSource that uses the Choria network broadcast method to discover nodes
 type BroadcastNS struct {
 	nodeCache []string
 	f         *protocol.Filter
@@ -18,6 +19,7 @@ type BroadcastNS struct {
 	sync.Mutex
 }
 
+// Reset resets the internal node cache
 func (b *BroadcastNS) Reset() {
 	b.Lock()
 	defer b.Unlock()
@@ -25,6 +27,7 @@ func (b *BroadcastNS) Reset() {
 	b.nodeCache = []string{}
 }
 
+// Discover performs the discovery of nodes against the Choria Network
 func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
 	b.Lock()
 	defer b.Unlock()

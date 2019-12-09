@@ -10,15 +10,15 @@ import (
 	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 )
 
-// Requestor is a generic request handler
-type Requestor struct {
+// requestor is a generic request handler
+type requestor struct {
 	client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client
 	action string
 	args   map[string]interface{}
 }
 
-// Do performs the request
-func (r *Requestor) Do(ctx context.Context, handler func(pr protocol.Reply, r *rpcclient.RPCReply)) (*rpcclient.Stats, error) {
+// do performs the request
+func (r *requestor) do(ctx context.Context, handler func(pr protocol.Reply, r *rpcclient.RPCReply)) (*rpcclient.Stats, error) {
 	r.client.infof("Starting discovery")
 	targets, err := r.client.ns.Discover(ctx, r.client.fw, r.client.filters)
 	if err != nil {

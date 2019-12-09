@@ -2,9 +2,7 @@
 
 A POC to see what a wrapper API might look like around a choria rpc agent.
 
-The main idea is that one might run `choria tool generate client puppet` and this will, based on the puppet DDL` produce a API client that looks a bit like this.
-
-The code will be generated and based on the DDL.
+The main idea is that one might run `choria tool generate client puppet` and this will, based on the puppet DDL, produce a API client that looks a bit like this.
 
 # Status?
 
@@ -22,8 +20,7 @@ res, err = p.InBatches(10, 30).FactFilter("customer=acme"). \\ these are client 
                                                             \\ invocations of any agent
   Disable().                                                \\ if there are mandatory inputs to the action `disable`
                                                             \\ you would pass them as arguments here, optional ones are chained
-  Message("testing, 1, 2, 3).
-  Do(ctx)
+  Message("testing, 1, 2, 3).Do(ctx)
 
 panicIfErr(err)
 ```

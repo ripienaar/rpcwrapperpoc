@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT
+{{ GeneratedWarning }}
 
 package {{ .Package }}
 
@@ -11,7 +11,7 @@ import (
 
 // {{ .ActionName | SnakeToCamel }}Requestor performs a RPC request to {{ .AgentName | ToLower }}#{{ .ActionName | ToLower }}
 type {{ .ActionName | SnakeToCamel }}Requestor struct {
-	r    *Requestor
+	r    *requestor
 	outc chan *{{ .ActionName | SnakeToCamel }}Output
 }
 
@@ -28,7 +28,7 @@ type {{ .ActionName | SnakeToCamel }}Result struct {
 }
 
 // Stats is the rpc request stats
-func (d *{{ .ActionName | SnakeToCamel }}Result) Stats() *rpcclient.Stats {
+func (d *{{ .ActionName | SnakeToCamel }}Result) Stats() Stats {
 	return d.stats
 }
 
@@ -75,7 +75,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Requestor) Do(ctx context.Context) (*{{
 		dres.outputs = append(dres.outputs, output)
 	}
 
-	res, err := d.r.Do(ctx, handler)
+	res, err := d.r.do(ctx, handler)
 	if err != nil {
 		return nil, err
 	}
