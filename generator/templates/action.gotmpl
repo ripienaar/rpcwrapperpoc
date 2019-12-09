@@ -92,12 +92,12 @@ func (d *{{ .ActionName | SnakeToCamel }}Result) EachOutput(h func(r *{{ .Action
 	}
 }
 
-{{ range $name, $input := .Inputs }}
-// {{ $name | SnakeToCamel }} is an input to the {{ $.ActionName | ToLower }} action
+{{ range $name, $input := .OptionalInputs }}
+// {{ $name | SnakeToCamel }} is an optional input to the {{ $.ActionName | ToLower }} action
 //
 // Description: {{ $input.Description }}
 func (d *{{ $.ActionName | SnakeToCamel }}Requestor) {{ $name | SnakeToCamel }}(v {{ ChoriaTypeToGoType $input.Type }}) *{{ $.ActionName | SnakeToCamel }}Requestor {
-	d.r.args["message"] = v
+	d.r.args["{{ $name | ToLower }}"] = v
 
 	return d
 }

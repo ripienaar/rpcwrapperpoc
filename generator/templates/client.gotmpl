@@ -151,11 +151,29 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 // {{ $action.Name | SnakeToCamel }} performs the {{ $action.Name | ToLower }} action
 //
 // Description: {{ $action.Description }}
-func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}() *{{ $action.Name | SnakeToCamel }}Requestor {
+{{- if ChoriaOptionalInputs $action }}
+//
+// Required Inputs:
+{{- range $name, $input := ChoriaOptionalInputs $action }}
+//    {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
+{{- end }}
+{{- end }}
+{{- if ChoriaRequiredInputs $action }}
+//
+// Optional Inputs:
+{{- range $name, $input := ChoriaRequiredInputs $action }}
+//    {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
+{{- end }}
+{{- end }}
+func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}({{ $action | ChoriaOptionalInputsToFuncArgs }}) *{{ $action.Name | SnakeToCamel }}Requestor {
 	d := &{{ $action.Name | SnakeToCamel }}Requestor{
 		outc: nil,
 		r: &requestor{
-			args:   make(map[string]interface{}),
+			args:   map[string]interface{}{
+{{- range $name, $input := ChoriaOptionalInputs $action }}
+	"{{ $name }}": {{ $name }}Input,
+{{- end }}
+			},
 			action: "{{ $action.Name | ToLower }}",
 			client: p,
 		},
